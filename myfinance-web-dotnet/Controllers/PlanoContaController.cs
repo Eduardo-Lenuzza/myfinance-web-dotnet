@@ -28,17 +28,44 @@ namespace myfinance_web_dotnet.Controllers
         [HttpGet]
         [HttpPost]
         [Route("Cadastro")]
-        public IActionResult Cadastro(PlanoContaModel? planoContaModel)
+        [Route("Cadastro/{id}")]
+        public IActionResult Cadastro(PlanoContaModel? planoContaModel, int? id)
         {
-            if(planoContaModel != null && ModelState.IsValid)
+            if(id != null && !ModelState.IsValid)
             {
-                var planoConta = new PlanoConta();
-                planoConta.Id = planoContaModel.Id;
-                planoConta.Nome = planoContaModel.Nome;
-                planoConta.Tipo = planoContaModel.Tipo;
-                _planoContaService.Salvar(planoConta);
+                var registro = _planoContaService.RetornarRegistro((int)id);
+
+                var model = new PlanoContaModel()
+                {
+                    Id = registro.Id,
+                    Nome = registro.Nome,
+                    Tipo = registro.Tipo
+                };
+
+                return View(model);
             }
-            return View();
+            else if(planoContaModel != null && ModelState.IsValid)
+            {
+                var planoConta = new PlanoConta
+                {
+                    Id = planoContaModel.Id,
+                    Nome = planoContaModel.Nome,
+                    Tipo = planoContaModel.Tipo
+                };
+                _planoContaService.Salvar(planoConta);
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                return View();
+            }
+        }
+        [HttpGet]
+        [Route("Excluir/{id}")]
+        public IActionResult Excluir(int id)
+        {
+            _planoContaService.Excluir(id);
+            return RedirectToAction("Index");
         }
     }
 }
